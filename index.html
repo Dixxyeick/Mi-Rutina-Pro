@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#0f172a">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RutinaPro">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mi Rutina Pro</title>
+
+<!-- ICONO DE LA APLICACIÓN -->
+<link rel="icon" type="image/png" sizes="192x192" href="./icono.png">
+<link rel="apple-touch-icon" href="./icono.png">
+<link rel="manifest" href="manifest.json">
+
+<!-- LIBRERÍAS DE PDF Y GRÁFICAS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  }
+</script>
+<style>
+  body { font-family: system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 18px; padding-bottom: 40px; }
+  header { background-color: #1e293b; padding: 16px; border-radius: 14px; margin-bottom: 18px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #334155; }
+  h1 { color: #38bdf8; margin: 0; font-size: 22px; font-weight: bold; }
+  .subtitle { font-size: 13px; color: #94a3b8; margin-top: 2px; }
+  .card { background-color: #1e293b; padding: 16px; border-radius: 14px; margin-bottom: 14px; border: 1px solid #334155; }
+  label { font-size: 13px; color: #94a3b8; display: block; margin-bottom: 6px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+  select, input { background-color: #0f172a; color: #fff; border: 1px solid #334155; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; font-size: 16px; font-weight: 600; }
+  input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+  input[type=number] { -moz-appearance: textfield; }
+  .grid { display: grid; grid-template-columns: 5fr 4fr 3fr; gap: 8px; margin-top: 12px; align-items: center; }
+  .counter { display: flex; align-items: center; background-color: #0f172a; border-radius: 10px; border: 1px solid #334155; }
+  .counter button { width: 36px; height: 44px; background: #1e293b; color: #38bdf8; border: none; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; }
+  .counter input { border: none; text-align: center; color: #38bdf8; font-size: 17px; font-weight: bold; padding: 6px; }
+  .btn { background-color: #0284c7; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 16px; }
+  .btn-save { background-color: #059669; }
+  .btn-exit { background-color: #e11d48; }
+  .btn-pdf { background-color: #0284c7; padding: 8px 14px; font-size: 13px; border-radius: 8px; cursor: pointer; display: inline-block; font-weight: bold; }
+  .btn-del { background-color: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; float: right; }
+  .btn-link { background-color: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); text-decoration: none; padding: 6px 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+  
+  .btn-fullscreen { position: fixed; top: 12px; right: 12px; background: #1e293b; color: #38bdf8; border: 1px solid #334155; border-radius: 50%; width: 40px; height: 40px; font-size: 18px; cursor: pointer; z-index: 99; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.5); }
+
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 100; padding: 16px; align-items: center; justify-content: center; }
+  .modal-content { background: #1e293b; border: 1px solid #334155; border-radius: 18px; padding: 20px; max-width: 650px; width: 100%; max-height: 88vh; overflow-y: auto; box-sizing: border-box; }
+  .tab-btn { background: #0f172a; border: 1px solid #334155; color: #94a3b8; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; flex: 1; font-size: 12px; }
+  .tab-btn.active { background: #0284c7; color: white; border-color: #38bdf8; }
+  .chart-box { background: #0f172a; border: 1px solid #334155; border-radius: 12px; padding: 12px; margin-bottom: 14px; }
+</style>
+</head>
+<body>
+
+<button class="btn-fullscreen" onclick="toggleFullScreen()" title="Maximizar / Pantalla Completa">⛶</button>
+
+<header>
+  <div>
+    <h1>Mi Rutina Pro</h1>
+    <div class="subtitle">Análisis, Vídeos y Gestión</div>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <label class="btn-pdf">
+      📄 PDF
+      <input type="file" id="pdfInput" accept="application/pdf" style="display:none" onchange="processPDF(event)">
+    </label>
+    <button class="btn btn-exit" style="width:auto; padding:8px 12px; font-size:13px;" onclick="exitAndSave()">🚪 Salir</button>
+  </div>
+</header>
+
+<div class="card">
+  <div style="display: flex; gap: 10px;">
+    <div style="flex: 1;">
+      <label>Fecha de Hoy</label>
+      <input type="date" id="sessionDate">
+    </div>
+    <div style="flex: 1.2;">
+      <label>Día de Entreno</label>
+      <select id="daySelect" onchange="renderExercises()">
+        <option value="">-- Seleccionar Día --</option>
+        <option value="1">DÍA 1 - Pecho, Hombro, Tríceps, Abs</option>
+        <option value="2">DÍA 2 - Espalda, Bíceps, Antebrazo, Lumbar</option>
+        <option value="3">DÍA 3 - Pierna</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div id="exercisesContainer">
+  <p style="text-align:center; color:#94a3b8; padding: 24px; font-size: 15px;">👆 Selecciona una opción en <strong>Día de Entreno</strong> para cargar los ejercicios.</p>
+</div>
+
+<div style="display: flex; gap: 10px; margin-top: 18px;">
+  <button class="btn btn-save" style="flex: 1.5;" onclick="saveData(true)">💾 Guardar Sesión</button>
+  <button class="btn" style="flex: 1;" onclick="toggleModal(true)">📊 Historial / Progreso</button>
+</div>
+
+<!-- MODAL DE HISTORIAL Y COMPARATIVA -->
+<div id="historyModal" class="modal">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 style="margin:0; font-size:18px; color:#38bdf8;">📊 Historial y Progreso</h2>
+      <button style="background:none; border:none; color:#94a3b8; font-size:24px; cursor:pointer; width:auto; margin:0;" onclick="toggleModal(false)">✕</button>
+    </div>
+
+    <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+      <button id="tabSessions" class="tab-btn active" onclick="switchTab('sessions')">📅 Sesiones</button>
+      <button id="tabExercise" class="tab-btn" onclick="switchTab('exercise')">📈 Ejercicio</button>
+      <button id="tabGlobal" class="tab-btn" onclick="switchTab('global')">📊 Evolución Global</button>
+    </div>
+
+    <div id="viewSessions">
+      <div id="historyList"></div>
+    </div>
+
+    <div id="viewExercise" style="display: none;">
+      <div style="margin-bottom: 14px;">
+        <label>Selecciona Ejercicio:</label>
+        <select id="exerciseCompareSelect" onchange="renderExerciseAnalysis()"></select>
+      </div>
+      <div class="chart-box">
+        <canvas id="exerciseChart" height="200"></canvas>
+      </div>
+      <div id="exerciseAnalysisContent"></div>
+    </div>
+
+    <div id="viewGlobal" style="display: none;">
+      <div class="chart-box">
+        <canvas id="globalChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <div style="margin-top: 18px; border-top: 1px solid #334155; padding-top: 14px; text-align: right;">
+      <button class="btn btn-save" style="width: auto; padding: 10px 18px; font-size: 13px;" onclick="downloadCSV()">⬇️ Exportar CSV</button>
+    </div>
+  </div>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./sw.js').catch(() => {});
+}
+
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
