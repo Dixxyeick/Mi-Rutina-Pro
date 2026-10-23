@@ -1,0 +1,17 @@
+{
+  "name": "Mi Rutina Pro",
+  "short_name": "RutinaPro",
+  "start_url": "https://dixxyeick.github.io/Mi-Rutina-Pro/index.html",
+  "scope": "https://dixxyeick.github.io/Mi-Rutina-Pro/",
+  "display": "standalone",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "https://dixxyeick.github.io/Mi-Rutina-Pro/icono.png",
+      "sizes": "192x192 512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
