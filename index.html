@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="theme-color" content="#1a0c02">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="RutinaPro">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Mi Rutina Pro</title>
+
+<!-- ICONO DE LA APLICACIÓN -->
+<link rel="icon" type="image/png" sizes="192x192" href="./icono.png">
+<link rel="apple-touch-icon" href="./icono.png">
+<link rel="manifest" href="manifest.json">
+
+<!-- LIBRERÍAS DE PDF Y GRÁFICAS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+  if (window.pdfjsLib) {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
+  }
+</script>
+<style>
+  /* Fondo Oscuro y Textura de Roca/Fuego de Bayonas VitalGym */
+  body { 
+    font-family: system-ui, -apple-system, sans-serif; 
+    background: linear-gradient(rgba(10, 5, 1, 0.90), rgba(20, 10, 2, 0.94)), url('https://dixxyeick.github.io/Mi-Rutina-Pro/icono.png') no-repeat center center fixed;
+    background-size: cover;
+    color: #f8fafc; 
+    margin: 0; 
+    padding: 18px; 
+    padding-bottom: 50px; 
+  }
+  
+  /* Botón de Maximizado invisible a la izquierda */
+  .btn-fullscreen { 
+    position: fixed; 
+    top: 14px; 
+    left: 14px; 
+    background: transparent; 
+    color: rgba(255, 255, 255, 0.05); 
+    border: none; 
+    width: 30px; 
+    height: 30px; 
+    font-size: 14px; 
+    cursor: pointer; 
+    z-index: 99; 
+    display: flex; 
+    align-items: center; 
+    justify-content: center; 
+  }
+  .btn-fullscreen:active { color: rgba(255, 255, 255, 0.3); }
+
+  /* Cabecera con imagen estilizada y bordes en fuego */
+  header { 
+    background: linear-gradient(135deg, rgba(45, 22, 6, 0.95), rgba(20, 7, 0, 0.95)), url('https://dixxyeick.github.io/Mi-Rutina-Pro/icono.png') no-repeat center center;
+    background-size: cover;
+    background-blend-mode: overlay;
+    padding: 20px; 
+    border-radius: 14px; 
+    margin-top: 10px;
+    margin-bottom: 18px; 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    border: 2px solid #fd5e09; 
+    box-shadow: 0 6px 20px rgba(253, 94, 9, 0.35);
+  }
+  
+  /* Textos con alto impacto y sombra */
+  h1 { color: #fd5e09; margin: 0; font-size: 24px; font-weight: 900; text-shadow: 2px 2px 5px #000, 0 0 10px rgba(253, 94, 9, 0.8); letter-spacing: 0.5px; }
+  .subtitle { font-size: 14px; color: #f59e0b; margin-top: 2px; text-shadow: 1px 1px 3px #000; font-weight: 800; letter-spacing: 1px; }
+
+  /* Tarjetas de entrenamiento con efecto de textura */
+  .card { 
+    background: linear-gradient(145deg, rgba(31, 15, 4, 0.95), rgba(13, 6, 2, 0.95)); 
+    padding: 16px; 
+    border-radius: 14px; 
+    margin-bottom: 14px; 
+    border: 1.5px solid #7c2d12; 
+    box-shadow: inset 0 0 12px rgba(0,0,0,0.95), 0 4px 10px rgba(0,0,0,0.8);
+  }
+  
+  label { font-size: 13px; color: #f97316; display: block; margin-bottom: 6px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; text-shadow: 1px 1px 2px #000; }
+  select, input { background-color: #050201; color: #fff; border: 1.5px solid #7c2d12; padding: 12px; border-radius: 10px; width: 100%; box-sizing: border-box; font-size: 16px; font-weight: 600; text-shadow: 1px 1px 1px #000; }
+  select:focus, input:focus { border-color: #fd5e09; box-shadow: 0 0 8px rgba(253, 94, 9, 0.5); outline: none; }
+  
+  .grid { display: grid; grid-template-columns: 5fr 4fr 3fr; gap: 8px; margin-top: 12px; align-items: center; }
+  
+  /* Controles de incremento de carga */
+  .counter { display: flex; align-items: center; background-color: #050201; border-radius: 10px; border: 1.5px solid #7c2d12; }
+  .counter button { width: 36px; height: 44px; background: #1f0f04; color: #fd5e09; border: none; font-size: 18px; font-weight: bold; cursor: pointer; border-radius: 8px; }
+  .counter button:active { background-color: #fd5e09; color: #000; }
+  .counter input { border: none; text-align: center; color: #fd5e09; font-size: 17px; font-weight: bold; padding: 6px; }
+  
+  /* Botones Estilo Industrial Metálico de VitalGym */
+  .btn { background: linear-gradient(135deg, #ea580c, #7c2d12); color: white; border: 2px solid #fd5e09; padding: 14px; border-radius: 12px; font-weight: bold; width: 100%; cursor: pointer; font-size: 16px; text-shadow: 2px 2px 3px #000; box-shadow: 0 4px 12px rgba(0,0,0,0.6), inset 0 1px 2px rgba(255,255,255,0.2); }
+  .btn:active { transform: translateY(1px); box-shadow: 0 2px 6px rgba(0,0,0,0.5); }
+  .btn-save { background: linear-gradient(135deg, #15803d, #14532d); border-color: #22c55e; }
+  .btn-exit { background: linear-gradient(135deg, #b91c1c, #7f1d1d); border-color: #f87171; }
+  .btn-pdf { background: linear-gradient(135deg, #0284c7, #0369a1); border-color: #38bdf8; padding: 8px 14px; font-size: 13px; border-radius: 8px; cursor: pointer; display: inline-block; font-weight: bold; text-shadow: 1px 1px 2px #000; }
+  .btn-del { background-color: rgba(244, 63, 94, 0.15); color: #fb7185; border: 1px solid rgba(244, 63, 94, 0.3); padding: 6px 10px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; float: right; }
+  .btn-link { background-color: rgba(253, 94, 9, 0.15); color: #fd5e09; border: 1px solid rgba(253, 94, 9, 0.3); text-decoration: none; padding: 6px 10px; border-radius: 8px; font-size: 13px; font-weight: bold; }
+  
+  /* Ventanas de diálogo flotantes (Modales) */
+  .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.96); z-index: 100; padding: 16px; align-items: center; justify-content: center; }
+  .modal-content { background: #0c0401; border: 2.5px solid #fd5e09; border-radius: 18px; padding: 20px; max-width: 650px; width: 100%; max-height: 88vh; overflow-y: auto; box-sizing: border-box; box-shadow: 0 10px 30px rgba(253, 94, 9, 0.3); }
+  .tab-btn { background: #050201; border: 1.5px solid #7c2d12; color: #a1a1aa; padding: 10px; border-radius: 10px; font-weight: bold; cursor: pointer; flex: 1; font-size: 12px; }
+  .tab-btn.active { background: #fd5e09; color: white; border-color: #ea580c; text-shadow: 1px 1px 1px #000; }
+  .chart-box { background: #050201; border: 1.5px solid #7c2d12; border-radius: 12px; padding: 12px; margin-bottom: 14px; }
+  
+  .footer-lema { text-align: center; color: #fd5e09; font-weight: bold; font-size: 13px; margin-top: 25px; text-transform: uppercase; letter-spacing: 2px; text-shadow: 1px 1px 3px #000; }
+</style>
+</head>
+<body>
+
+<button class="btn-fullscreen" onclick="toggleFullScreen()" title="Maximizar">⛶</button>
+
+<header>
+  <div>
+    <h1>Mi Rutina Pro</h1>
+    <div class="subtitle">BAYONAS VITALGYM</div>
+  </div>
+  <div style="display:flex; gap:8px;">
+    <label class="btn-pdf">
+      📄 PDF
+      <input type="file" id="pdfInput" accept="application/pdf" style="display:none" onchange="processPDF(event)">
+    </label>
+    <button class="btn btn-exit" style="width:auto; padding:8px 12px; font-size:13px;" onclick="exitAndSave()">🚪 Salir</button>
+  </div>
+</header>
+
+<div class="card">
+  <div style="display: flex; gap: 10px;">
+    <div style="flex: 1;">
+      <label>Fecha de Hoy</label>
+      <input type="date" id="sessionDate">
+    </div>
+    <div style="flex: 1.2;">
+      <label>Día de Entreno</label>
+      <select id="daySelect" onchange="renderExercises()">
+        <option value="">-- Seleccionar Día --</option>
+        <option value="1">DÍA 1 - Pecho, Hombro, Tríceps, Abs</option>
+        <option value="2">DÍA 2 - Espalda, Bíceps, Antebrazo, Lumbar</option>
+        <option value="3">DÍA 3 - Pierna</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div id="exercisesContainer">
+  <p style="text-align:center; color:#a1a1aa; padding: 24px; font-size: 15px; text-shadow: 1px 1px 2px #000;">👆 Selecciona una opción en <strong>Día de Entreno</strong> para cargar los ejercicios.</p>
+</div>
+
+<div style="display: flex; gap: 10px; margin-top: 18px;">
+  <button class="btn btn-save" style="flex: 1.5;" onclick="saveData(true)">💾 Guardar Sesión</button>
+  <button class="btn" style="flex: 1;" onclick="toggleModal(true)">📊 Historial / Progreso</button>
+</div>
+
+<div class="footer-lema">ENTRENA • MEJORA • EVOLUCIONA</div>
+
+<!-- MODAL DE HISTORIAL Y COMPARATIVA -->
+<div id="historyModal" class="modal">
+  <div class="modal-content">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+      <h2 style="margin:0; font-size:18px; color:#fd5e09; text-shadow: 1px 1px 2px #000;">📊 Historial y Progreso</h2>
+      <button style="background:none; border:none; color:#ea580c; font-size:24px; cursor:pointer; width:auto; margin:0;" onclick="toggleModal(false)">✕</button>
+    </div>
+
+    <div style="display: flex; gap: 6px; margin-bottom: 16px;">
+      <button id="tabSessions" class="tab-btn active" onclick="switchTab('sessions')">📅 Sesiones</button>
+      <button id="tabExercise" class="tab-btn" onclick="switchTab('exercise')">📈 Ejercicio</button>
+      <button id="tabGlobal" class="tab-btn" onclick="switchTab('global')">📊 Evolución Global</button>
+    </div>
+
+    <div id="viewSessions">
+      <div id="historyList"></div>
+    </div>
+
+    <div id="viewExercise" style="display: none;">
+      <div style="margin-bottom: 14px;">
+        <label>Selecciona Ejercicio:</label>
+        <select id="exerciseCompareSelect" onchange="renderExerciseAnalysis()"></select>
+      </div>
+      <div class="chart-box">
+        <canvas id="exerciseChart" height="200"></canvas>
+      </div>
+      <div id="exerciseAnalysisContent"></div>
+    </div>
+
+    <div id="viewGlobal" style="display: none;">
+      <div class="chart-box">
+        <canvas id="globalChart" height="200"></canvas>
+      </div>
+    </div>
+
+    <div style="margin-top: 18px; border-top: 1px solid #7c2d12; padding-top: 14px; text-align: right;">
+      <button class="btn btn-save" style="width: auto; padding: 10px 18px; font-size: 13px;" onclick="downloadCSV()">⬇️ Exportar CSV</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Registro autogenerado en memoria del Service Worker (evita cuelgues o problemas de archivos en servidor)
+if ('serviceWorker' in navigator) {
+  const swCode = `
+    self.addEventListener('install', e => self.skipWaiting());
+    self.addEventListener('activate', e => e.waitUntil(self.clients.claim()));
+    self.addEventListener('fetch', e => e.respondWith(fetch(e.request).catch(() => caches.match(e.request))));
+  `;
+  const blob = new Blob([swCode], { type: 'application/javascript' });
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(() => {});
+}
+
+function toggleFullScreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen().catch(() => {});
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
+const baseRoutines = {
+  "1": [
+    { id: "d1_e1", name: "1. Press inclinado en palancas", target: "4 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d1_e2", name: "2. Elevaciones máquina disco laterales", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" },
+    { id: "d1_e3", name: "3. Aperturas en palancas", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" },
+    { id: "d1_e4", name: "4. Press de hombro máquina palancas de discos sentado", target: "3 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d1_e5", name: "5. Fondos en máquina de placas", target: "3 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d1_e6", name: "6. Extensión de tríceps agarre ancho", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" },
+    { id: "d1_e7", name: "7. Abdominal inferior", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" },
+    { id: "d1_e8", name: "8. Abdominal superior", target: "3 series x 15-20 rep.", defaultWeight: 0, defaultReps: "15-20" }
+  ],
+  "2": [
+    { id: "d2_e1", name: "1. Jalón neutro en palancas", target: "4 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d2_e2", name: "2. Curl de bíceps", target: "3 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d2_e3", name: "3. Remo en punta o Multipower", target: "3 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d2_e4", name: "4. Curl de bíceps en polea UVE", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" },
+    { id: "d2_e5", name: "5. Pullover en polea alta", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" },
+    { id: "d2_e6", name: "6. Curl inverso para antebrazo", target: "3 series x 8-10 rep.", defaultWeight: 0, defaultReps: "8-10" },
+    { id: "d2_e7", name: "7. Hiperextensiones lumbares", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" }
+  ],
+  "3": [
+    { id: "d3_e1", name: "1. Prensa inclinada - Cuádriceps", target: "4 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d3_e2", name: "2. Femoral sentado", target: "4 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d3_e3", name: "3. Extensiones de cuádriceps", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" },
+    { id: "d3_e4", name: "4. Peso muerto rumano - Femoral", target: "3 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d3_e5", name: "5. Hack pies juntos - Cuádriceps", target: "3 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d3_e6", name: "6. Aductores cerrar en máquina", target: "3 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" },
+    { id: "d3_e7", name: "7. Hip Thrust - Glúteo", target: "3 series x 10-12 rep.", defaultWeight: 0, defaultReps: "10-12" },
+    { id: "d3_e8", name: "8. Gemelo de pie", target: "4 series x 12-15 rep.", defaultWeight: 0, defaultReps: "12-15" }
+  ]
+};
+
+let appData = { videoUrls: {}, history: [] };
+try {
+  const saved = localStorage.getItem('gym_routine_pro_data');
+  if (saved) appData = JSON.parse(saved);
+  if (!appData.history) appData.history = [];
+  if (!appData.videoUrls) appData.videoUrls = {};
+} catch(e){}
+
+let exChartInstance = null;
+let globalChartInstance = null;
+
+function initApp() {
+  const dateInput = document.getElementById('sessionDate');
+  if (dateInput && !dateInput.value) {
+    const today = new Date().toISOString().split('T')[0];
+    dateInput.value = today;
+  }
+  renderExercises();
+}
+
+function renderExercises() {
+  const currentDay = document.getElementById('daySelect').value;
+  const container = document.getElementById('exercisesContainer');
+  container.innerHTML = '';
+  
+  if (!currentDay || !baseRoutines[currentDay]) {
+    container.innerHTML = '<p style="text-align:center; color:#a1a1aa; padding: 24px; font-size: 15px; text-shadow: 1px 1px 2px #000;">👆 Selecciona una opción en <strong>Día de Entreno</strong> para cargar los ejercicios.</p>';
+    return;
+  }
+  
+  const exercises = baseRoutines[currentDay];
+  const lastSession = appData.history.filter(s => String(s.day) === String(currentDay)).pop() || { data: {} };
+
+  exercises.forEach(ex => {
+    const exData = (lastSession.data && lastSession.data[ex.id]) ? lastSession.data[ex.id] : { weight: ex.defaultWeight, reps: ex.defaultReps, notes: '' };
+    const videoUrl = appData.videoUrls[ex.id] || "";
+
+    const card = document.createElement('div');
+    card.className = "card";
+    card.innerHTML = `
+      <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+        <div>
+          <strong style="font-size:16px; color:#fd5e09; text-shadow: 1px 1px 2px #000;">${ex.name}</strong>
+          <div style="font-size:12px; color:#f59e0b; margin-top:2px;">${ex.target}</div>
+        </div>
+        <div>
+          ${videoUrl ? `<a href="${videoUrl}" target="_blank" class="btn-link">▶ Vídeo</a>` : `<button onclick="promptVideoUrl('${ex.id}')" style="background:#2d1606; color:#fd5e09; border:1px solid #7c2d12; padding:6px 10px; border-radius:6px; font-size:12px; cursor:pointer;">+ Enlace</button>`}
+        </div>
+      </div>
+      <div class="grid">
+        <div>
+          <label>Peso (kg)</label>
+          <div class="counter">
+            <button type="button" onclick="adjustVal('${ex.id}_weight', -2.5)">-</button>
+            <input type="number" step="0.5" id="${ex.id}_weight" value="${exData.weight !== undefined ? exData.weight : ex.defaultWeight}" placeholder="0">
+            <button type="button" onclick="adjustVal('${ex.id}_weight', 2.5)">+</button>
+          </div>
+        </div>
+        <div>
+          <label>Reps / Series</label>
+          <input type="text" id="${ex.id}_reps" value="${exData.reps || ex.defaultReps}" placeholder="ej. 10-10-8">
+        </div>
+        <div>
+          <label>Notas</label>
+          <input type="text" id="${ex.id}_notes" value="${exData.notes || ''}" placeholder="RPE 8">
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
+}
+
+function adjustVal(inputId, amount) {
+  const el = document.getElementById(inputId);
+  if (!el) return;
+  let val = parseFloat(el.value) || 0;
+  el.value = Math.max(0, val + amount);
+}
+
+function saveData(showAlert = true) {
+  const currentDay = document.getElementById('daySelect').value;
+  if (!currentDay) { 
+    if(showAlert) alert("Por favor, selecciona primero un Día de Entreno."); 
+    return false; 
+  }
+
+  const date = document.getElementById('sessionDate').value;
+  const exercises = baseRoutines[currentDay] || [];
+  const sessionData = {};
+
+  exercises.forEach(ex => {
+    const weightEl = document.getElementById(`${ex.id}_weight`);
+    const repsEl = document.getElementById(`${ex.id}_reps`);
+    const notesEl = document.getElementById(`${ex.id}_notes`);
+    sessionData[ex.id] = {
+      weight: weightEl ? weightEl.value : '',
+      reps: repsEl ? repsEl.value : '',
+      notes: notesEl ? notesEl.value : '',
+      name: ex.name,
+      exId: ex.id
+    };
+  });
+
+  const existingIdx = appData.history.findIndex(s => String(s.day) === String(currentDay) && s.date === date);
+  if (existingIdx !== -1) {
+    appData.history[existingIdx].data = sessionData;
+  } else {
+    appData.history.push({ date, day: currentDay, data: sessionData });
+  }
+
+  localStorage.setItem('gym_routine_pro_data', JSON.stringify(appData));
+  if(showAlert) alert("¡Sesión guardada/actualizada con éxito!");
+  return true;
+}
+
+function exitAndSave() {
+  saveData(false);
+  alert("Sesión guardada automáticamente. Puedes cerrar la app.");
+}
+
+function deleteRecord(index) {
+  if (confirm("¿Seguro que deseas eliminar este registro del historial?")) {
+    appData.history.splice(index, 1);
+    localStorage.setItem('gym_routine_pro_data', JSON.stringify(appData));
+    loadHistoryModal();
+  }
+}
+
+function promptVideoUrl(exId) {
+  const url = prompt("Introduce la URL del vídeo para este ejercicio:");
+  if (url) {
+    appData.videoUrls[exId] = url;
+    localStorage.setItem('gym_routine_pro_data', JSON.stringify(appData));
+    renderExercises();
+  }
+}
+
+function toggleModal(show) {
+  const m = document.getElementById('historyModal');
+  m.style.display = show ? 'flex' : 'none';
+  if (show) {
+    populateCompareDropdown();
+    loadHistoryModal();
+  }
+}
+
+function switchTab(tab) {
+  document.getElementById('tabSessions').className = 'tab-btn' + (tab === 'sessions' ? ' active' : '');
+  document.getElementById('tabExercise').className = 'tab-btn' + (tab === 'exercise' ? ' active' : '');
+  document.getElementById('tabGlobal').className = 'tab-btn' + (tab === 'global' ? ' active' : '');
+  
+  document.getElementById('viewSessions').style.display = tab === 'sessions' ? 'block' : 'none';
+  document.getElementById('viewExercise').style.display = tab === 'exercise' ? 'block' : 'none';
+  document.getElementById('viewGlobal').style.display = tab === 'global' ? 'block' : 'none';
+  
+  if (tab === 'exercise') renderExerciseAnalysis();
+  if (tab === 'global') renderGlobalAnalysis();
+}
+
+function populateCompareDropdown() {
+  const select = document.getElementById('exerciseCompareSelect');
+  select.innerHTML = '';
+  Object.keys(baseRoutines).forEach(day => {
+    baseRoutines[day].forEach(ex => {
+      const opt = document.createElement('option');
+      opt.value = ex.id;
+      opt.textContent = `${ex.name} (Día ${day})`;
+      select.appendChild(opt);
+    });
+  });
+}
+
+function renderExerciseAnalysis() {
+  const selectedExId = document.getElementById('exerciseCompareSelect').value;
+  const container = document.getElementById('exerciseAnalysisContent');
+  container.innerHTML = '';
+
+  const records = [];
+  appData.history.forEach(s => {
+    if (s.data && s.data[selectedExId] && s.data[selectedExId].weight !== '') {
+      records.push({
+        date: s.date,
+        weight: parseFloat(s.data[selectedExId].weight) || 0,
+        reps: s.data[selectedExId].reps || 'N/A'
+      });
+    }
+  });
+
+  if (records.length === 0) {
+    container.innerHTML = '<p style="font-size:14px; color:#a1a1aa; text-align:center; padding:16px;">No hay datos guardados para este ejercicio.</p>';
+    if(exChartInstance) exChartInstance.destroy();
+    return;
+  }
+
+  const labels = records.map(r => r.date);
+  const dataWeights = records.map(r => r.weight);
+
+  if(exChartInstance) exChartInstance.destroy();
+  const ctx = document.getElementById('exerciseChart').getContext('2d');
+  exChartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Peso (kg)',
+        data: dataWeights,
+        borderColor: '#fd5e09',
+        backgroundColor: 'rgba(253, 94, 9, 0.2)',
+        fill: true,
+        tension: 0.3,
+        borderWidth: 3,
+        pointRadius: 5
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#f8fafc' } } },
+      scales: {
+        x: { ticks: { color: '#a1a1aa' }, grid: { color: '#3f1a04' } },
+        y: { ticks: { color: '#a1a1aa' }, grid: { color: '#3f1a04' } }
+      }
+    }
+  });
+
+  const maxW = Math.max(...dataWeights);
+  const firstW = dataWeights[0];
+  const lastW = dataWeights[dataWeights.length - 1];
+  const diff = lastW - firstW;
+
+  container.innerHTML = `
+    <div style="background:#050201; padding:12px; border-radius:10px; border:1px solid #7c2d12; display:flex; justify-content:space-around; text-align:center;">
+      <div><div style="font-size:11px; color:#a1a1aa;">PESO MÁXIMO</div><div style="font-size:18px; font-weight:bold; color:#fd5e09;">${maxW} kg</div></div>
+      <div><div style="font-size:11px; color:#a1a1aa;">INCREMENTO TOTAL</div><div style="font-size:18px; font-weight:bold; color:${diff >= 0 ? '#22c55e' : '#f87171'};">${diff >= 0 ? '+' : ''}${diff} kg</div></div>
+    </div>
+  `;
+}
+
+function renderGlobalAnalysis() {
+  if (appData.history.length === 0) return;
+
+  const labels = appData.history.map(s => `${s.date} (D${s.day})`);
+  const totalWeights = appData.history.map(s => {
+    let sum = 0;
+    Object.values(s.data).forEach(d => { sum += (parseFloat(d.weight) || 0); });
+    return sum;
+  });
+
+  if(globalChartInstance) globalChartInstance.destroy();
+  const ctx = document.getElementById('globalChart').getContext('2d');
+  globalChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: labels,
+      datasets: [{
+        label: 'Carga Total Movida (kg)',
+        data: totalWeights,
+        backgroundColor: '#ea580c',
+        borderRadius: 6
+      }]
+    },
+    options: {
+      responsive: true,
+      plugins: { legend: { labels: { color: '#f8fafc' } } },
+      scales: {
+        x: { ticks: { color: '#a1a1aa' }, grid: { color: '#3f1a04' } },
+        y: { ticks: {
