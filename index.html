@@ -3,292 +3,118 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rutina de Entrenamiento Ultra Estable</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
-<script>
-if (window.pdfjsLib) {
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.worker.min.js';
-}
-</script>
+<title>Mi Rutina Pro</title>
 <style>
-input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-input[type=number] { -moz-appearance: textfield; }
+  body { font-family: system-ui, -apple-system, sans-serif; background-color: #0f172a; color: #f8fafc; margin: 0; padding: 16px; }
+  header { background-color: #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 16px; text-align: center; }
+  h1 { color: #38bdf8; margin: 0; font-size: 20px; }
+  .card { background-color: #1e293b; padding: 12px; border-radius: 8px; margin-bottom: 12px; border: 1px solid #334155; }
+  label { font-size: 12px; color: #94a3b8; display: block; margin-bottom: 4px; }
+  select, input { background-color: #0f172a; color: #fff; border: 1px solid #334155; padding: 8px; border-radius: 6px; width: 100%; box-sizing: border-box; font-size: 14px; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+  button { background-color: #0284c7; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; width: 100%; margin-top: 8px; cursor: pointer; }
+  .btn-save { background-color: #059669; }
+  .btn-hist { background-color: #0284c7; }
 </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen pb-12 font-sans">
+<body>
 
-<header class="bg-slate-800 border-b border-slate-700 sticky top-0 z-50 shadow-md">
-<div class="max-w-4xl mx-auto px-4 py-3 flex justify-between items-center">
-<div>
-<h1 class="text-lg font-bold text-sky-400">Mi Rutina Pro</h1>
-<p class="text-xs text-slate-400">Versión Optimizada Ultra Estable</p>
-</div>
-<div class="flex gap-2">
-<label class="bg-sky-600 hover:bg-sky-500 text-white text-xs font-semibold px-3 py-2 rounded-lg cursor-pointer transition flex items-center gap-1 shadow">
-📄 Cargar PDF
-<input type="file" id="pdfInput" accept="application/pdf" class="hidden" onchange="processPDF(event)">
-</label>
-</div>
-</div>
+<header>
+  <h1>Mi Rutina de Gimnasio</h1>
 </header>
 
-<main class="max-w-4xl mx-auto px-4 mt-6">
-
-<div class="bg-slate-800 p-4 rounded-xl border border-slate-700 mb-6 flex flex-wrap gap-4 justify-between items-center">
-<div>
-<label class="block text-xs text-slate-400 mb-1">Fecha de Hoy</label>
-<input type="date" id="sessionDate" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-semibold text-sky-400 focus:outline-none">
-</div>
-<div>
-<label class="block text-xs text-slate-400 mb-1">Día de Entreno</label>
-<select id="daySelect" onchange="loadDayData()" class="bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-sm font-semibold text-white focus:outline-none">
-<option value="" selected>-- Seleccionar Día --</option>
-<option value="1">DÍA 1 - Fuerza Basal</option>
-<option value="2">DÍA 2 - Cadena Posterior y Tracción</option>
-<option value="3">DÍA 3 - Cadera, Detalle y Aislamiento</option>
-</select>
-</div>
-<div id="saveBadge" class="hidden text-xs bg-emerald-900/60 text-emerald-400 border border-emerald-500/40 px-3 py-1.5 rounded-lg flex items-center gap-1">
-✓ Listo para escribir
-</div>
+<div class="card">
+  <label>Fecha de Hoy</label>
+  <input type="date" id="sessionDate">
+  
+  <label style="margin-top:10px;">Día de Entreno</label>
+  <select id="daySelect" onchange="renderExercises()">
+    <option value="">-- Seleccionar Día --</option>
+    <option value="1">DÍA 1 - Fuerza Basal</option>
+    <option value="2">DÍA 2 - Cadena Posterior y Tracción</option>
+    <option value="3">DÍA 3 - Cadera, Detalle y Aislamiento</option>
+  </select>
 </div>
 
-<div id="exercisesContainer" class="space-y-4">
-<div id="placeholderMsg" class="bg-slate-800 border border-slate-700/80 rounded-xl p-8 text-center text-slate-400 text-sm">
-👆 Por favor, elige una opción en <strong>Día de Entreno</strong> para comenzar la sesión.
-</div>
+<div id="exercisesContainer">
+  <p style="text-align:center; color:#94a3b8; padding: 20px;">👆 Selecciona un día arriba para cargar los ejercicios.</p>
 </div>
 
-<div class="mt-8 flex gap-3">
-<button onclick="saveCurrentSession()" class="w-2/3 bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition text-base">
-💾 Guardar Sesión
-</button>
-<button onclick="toggleModal('historyModal')" class="w-1/3 bg-sky-600 hover:bg-sky-500 text-white font-bold py-3 px-4 rounded-xl shadow-lg transition text-base">
-📁 Historial
-</button>
-</div>
-
-</main>
-
-<!-- MODAL DE HISTORIAL -->
-<div id="historyModal" class="hidden fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
-<div class="bg-slate-800 border border-slate-700 rounded-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-<div class="flex justify-between items-center mb-4">
-<h2 class="text-lg font-bold text-sky-400">📁 Historial de Entrenamientos</h2>
-<button onclick="toggleModal('historyModal')" class="text-slate-400 hover:text-white text-xl">✕</button>
-</div>
-<div id="historyList" class="space-y-3 mb-6"></div>
-<div class="pt-4 border-t border-slate-700 flex justify-end">
-<button onclick="downloadCSV()" class="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold px-4 py-2.5 rounded-lg transition">
-⬇️ Descargar Historial (CSV/Excel)
-</button>
-</div>
-</div>
+<div style="margin-top: 16px;">
+  <button class="btn-save" onclick="saveData()">💾 Guardar Sesión</button>
+  <button class="btn-hist" onclick="showHistory()">📁 Ver Historial</button>
 </div>
 
 <script>
-const baseRoutines = {
-"1": [
-{ id: "d1_e1", name: "1. Prensa inclinada (Cuádriceps)", target: "3 series x 8-10 rep." },
-{ id: "d1_e2", name: "2. Femoral sentado", target: "3 series x 8-10 rep." },
-{ id: "d1_e3", name: "3. Press inclinado en palancas", target: "3 series x 6-8 rep." },
-{ id: "d1_e4", name: "4. Jalón neutro en palancas", target: "3 series x 8-10 rep." },
-{ id: "d1_e5", name: "5. Press de hombro máquina palancas", target: "2 series x 8-10 rep." },
-{ id: "d1_e6", name: "6. Fondos en máquina de placas", target: "2 series x 10-12 rep." },
-{ id: "d1_e7", name: "7. Curl de bíceps", target: "2 series x 10-12 rep." },
-{ id: "d1_e8", name: "8. Abdominal inferior", target: "2-3 series x 12-15 rep." },
-{ id: "d1_e9", name: "9. Gemelo de pie (Opcional)", target: "3 series x 10-12 rep." }
-],
-"2": [
-{ id: "d2_e1", name: "1. Hack pies juntos (Cuádriceps)", target: "3 series x 8-10 rep." },
-{ id: "d2_e2", name: "2. Peso muerto rumano (Femoral)", target: "3 series x 6-8 rep." },
-{ id: "d2_e3", name: "3. Remo en punta o Multipower", target: "3 series x 8-10 rep." },
-{ id: "d2_e4", name: "4. Aperturas en palancas", target: "2 series x 10-12 rep." },
-{ id: "d2_e5", name: "5. Elevaciones máquina disco laterales", target: "3 series x 10-12 rep." },
-{ id: "d2_e6", name: "6. Gemelo de pie", target: "3 series x 10-12 rep." },
-{ id: "d2_e7", name: "7. Curl inverso para antebrazo", target: "2 series x 10-12 rep." },
-{ id: "d2_e8", name: "8. Hiperextensiones lumbares", target: "2 series x 10-12 rep." }
-],
-"3": [
-{ id: "d3_e1", name: "1. Hip Thrust (Glúteo)", target: "3 series x 8-10 rep." },
-{ id: "d3_e2", name: "2. Extensiones de cuádriceps", target: "2 series x 10-12 rep." },
-{ id: "d3_e3", name: "3. Pullover en polea alta", target: "3 series x 10-12 rep." },
-{ id: "d3_e4", name: "4. Press de hombro máquina palancas", target: "3 series x 8-10 rep." },
-{ id: "d3_e5", name: "5. Extensión de tríceps agarre ancho", target: "2 series x 10-12 rep." },
-{ id: "d3_e6", name: "6. Curl de bíceps en polea UVE", target: "2 series x 10-12 rep." },
-{ id: "d3_e7", name: "7. Aductores cerrar en máquina", target: "2 series x 12-15 rep." },
-{ id: "d3_e8", name: "8. Abdominal superior", target: "2 series x 15-20 rep." }
-]
+const routines = {
+  "1": ["1. Prensa inclinada", "2. Femoral sentado", "3. Press inclinado palancas", "4. Jalón neutro", "5. Press hombro máquina", "6. Fondos máquina", "7. Curl de bíceps", "8. Abdominal inferior"],
+  "2": ["1. Hack pies juntos", "2. Peso muerto rumano", "3. Remo en punta", "4. Aperturas en palancas", "5. Elevaciones máquina", "6. Gemelo de pie", "7. Curl inverso", "8. Hiperextensiones"],
+  "3": ["1. Hip Thrust", "2. Extensiones cuádriceps", "3. Pullover polea", "4. Press hombro", "5. Extensión tríceps", "6. Curl bíceps UVE", "7. Aductores máquina", "8. Abdominal superior"]
 };
 
-let appData = { videoUrls: {}, history: [] };
-try {
-const saved = localStorage.getItem('gym_routine_pro_data');
-if (saved) appData = JSON.parse(saved);
-if (!appData.history) appData.history = [];
-if (!appData.videoUrls) appData.videoUrls = {};
-} catch(e) {}
-
-try {
 document.getElementById('sessionDate').valueAsDate = new Date();
-} catch(e){}
 
-function loadDayData() {
-const currentDay = document.getElementById('daySelect').value;
-const container = document.getElementById('exercisesContainer');
-const badge = document.getElementById('saveBadge');
-
-if (!currentDay) {
-container.innerHTML = &lt;div class="bg-slate-800 border border-slate-700/80 rounded-xl p-8 text-center text-slate-400 text-sm"&gt; 👆 Por favor, elige una opción en &lt;strong&gt;Día de Entreno&lt;/strong&gt; para comenzar la sesión. &lt;/div>;
-badge.classList.add('hidden');
-return;
+function renderExercises() {
+  const day = document.getElementById('daySelect').value;
+  const container = document.getElementById('exercisesContainer');
+  container.innerHTML = '';
+  
+  if (!day || !routines[day]) {
+    container.innerHTML = '<p style="text-align:center; color:#94a3b8; padding: 20px;">👆 Selecciona un día arriba para cargar los ejercicios.</p>';
+    return;
+  }
+  
+  routines[day].forEach((ex, idx) => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = `
+      <strong>${ex}</strong>
+      <div class="grid">
+        <div>
+          <label>Peso (kg)</label>
+          <input type="number" id="w_${idx}" placeholder="0">
+        </div>
+        <div>
+          <label>Reps / Series</label>
+          <input type="text" id="r_${idx}" placeholder="ej. 10-10-8">
+        </div>
+      </div>
+    `;
+    container.appendChild(card);
+  });
 }
 
-badge.classList.remove('hidden');
-container.innerHTML = '';
-const exercises = baseRoutines[currentDay] || [];
-
-const date = document.getElementById('sessionDate').value;
-let sessionRecord = appData.history.find(s => String(s.day) === String(currentDay) && s.date === date);
-
-if (!sessionRecord) {
-sessionRecord = appData.history.filter(s => String(s.day) === String(currentDay)).pop() || { data: {} };
+function saveData() {
+  const day = document.getElementById('daySelect').value;
+  if(!day) { alert("Selecciona un día."); return; }
+  const date = document.getElementById('sessionDate').value;
+  
+  const data = {};
+  routines[day].forEach((ex, idx) => {
+    const w = document.getElementById(`w_${idx}`).value;
+    const r = document.getElementById(`r_${idx}`).value;
+    data[ex] = { weight: w, reps: r };
+  });
+  
+  let history = JSON.parse(localStorage.getItem('gym_simple_history')) || [];
+  history.push({ date, day, data });
+  localStorage.setItem('gym_simple_history', JSON.stringify(history));
+  alert("¡Sesión guardada correctamente!");
 }
 
-exercises.forEach(ex => {
-const exData = (sessionRecord.data && sessionRecord.data[ex.id]) ? sessionRecord.data[ex.id] : { weight: '', reps: '', notes: '' };
-const videoUrl = appData.videoUrls[ex.id] || "";
-
-const card = document.createElement('div');
-card.className = "bg-slate-800 border border-slate-700/80 rounded-xl p-4 shadow-sm";
-card.innerHTML = &lt;div class="flex justify-between items-start mb-2 gap-2"&gt; &lt;div&gt; &lt;h3 class="font-bold text-slate-100 text-sm"&gt;${ex.name}</h3>
-<p class="text-xs text-sky-400 font-medium">${ex.target}&lt;/p&gt; &lt;/div&gt; &lt;div&gt; ${videoUrl ? <a href="${videoUrl}" target="_blank" class="bg-sky-600/20 text-sky-400 border border-sky-500/30 text-xs px-2.5 py-1 rounded-lg">▶ Vídeo</a>:<button onclick="promptVideoUrl('latex
-{ex.id}')" class="bg-slate-700 text-slate-400 text-xs px-2 py-1 rounded-lg"&gt;+ Enlace&lt;/button>`} &lt;/div&gt; &lt;/div&gt; &lt;div class="grid grid-cols-12 gap-2 mt-3 items-center"&gt; &lt;div class="col-span-5 bg-slate-900 p-2 rounded-lg border border-slate-700"&gt; &lt;label class="block text-[10px] text-slate-400 uppercase font-semibold"&gt;Peso (kg)&lt;/label&gt; &lt;div class="flex items-center"&gt; &lt;button type="button" onclick="adjustVal('
-
-{ex.id}_weight', -2.5)" class="w-7 h-7 bg-slate-800 text-slate-300 rounded font-bold text-xs">-</button>
-<input type="number" step="0.5" id="{exData.weight || ''}" placeholder="0" class="w-full bg-transparent text-center font-bold text-sky-400 text-sm focus:outline-none">
-<button type="button" onclick="adjustVal('{ex.id}_reps" value="{ex.id}_notes" value="${exData.notes || ''}" placeholder="RPE 8" class="w-full bg-transparent text-center text-xs text-slate-300 py-1 focus:outline-none"&gt; &lt;/div&gt; &lt;/div&gt;;
-container.appendChild(card);
-});
+function showHistory() {
+  let history = JSON.parse(localStorage.getItem('gym_simple_history')) || [];
+  if(history.length === 0) { alert("No hay datos guardados aún."); return; }
+  let msg = "HISTORIAL DE ENTRENAMIENTOS:\n\n";
+  history.forEach(h => {
+    msg += `📅 ${h.date} (Día ${h.day})\n`;
+    Object.keys(h.data).forEach(k => {
+      if(h.data[k].weight) msg += `  • ${k}: ${h.data[k].weight} kg (${h.data[k].reps})\n`;
+    });
+    msg += "\n";
+  });
+  alert(msg);
 }
-
-function adjustVal(inputId, amount) {
-const el = document.getElementById(inputId);
-if (!el) return;
-let val = parseFloat(el.value) || 0;
-el.value = Math.max(0, val + amount);
-}
-
-function saveCurrentSession() {
-const currentDay = document.getElementById('daySelect').value;
-if (!currentDay) {
-alert("Por favor, selecciona primero un Día de Entreno.");
-return;
-}
-
-const date = document.getElementById('sessionDate').value;
-const exercises = baseRoutines[currentDay] || [];
-const sessionData = {};
-
-exercises.forEach(ex => {
-const weightEl = document.getElementById(${ex.id}_weight`); const repsEl = document.getElementById(`$`{ex.id}_reps`); const notesEl = document.getElementById(${ex.id}_notes`);
-sessionData[ex.id] = {
-weight: weightEl ? weightEl.value : '',
-reps: repsEl ? repsEl.value : '',
-notes: notesEl ? notesEl.value : '',
-name: ex.name
-};
-});
-
-const existingIdx = appData.history.findIndex(s => String(s.day) === String(currentDay) && s.date === date);
-if (existingIdx !== -1) {
-appData.history[existingIdx].data = sessionData;
-} else {
-appData.history.push({ date, day: currentDay, data: sessionData });
-}
-
-localStorage.setItem('gym_routine_pro_data', JSON.stringify(appData));
-alert("¡Sesión guardada con éxito!");
-}
-
-function deleteSessionRecord(index) {
-if (confirm("¿Seguro que deseas eliminar este registro?")) {
-appData.history.splice(index, 1);
-localStorage.setItem('gym_routine_pro_data', JSON.stringify(appData));
-loadHistoryModal();
-}
-}
-
-function promptVideoUrl(exId) {
-const url = prompt("Introduce el enlace del vídeo para este ejercicio:");
-if (url) {
-appData.videoUrls[exId] = url;
-localStorage.setItem('gym_routine_pro_data', JSON.stringify(appData));
-loadDayData();
-}
-}
-
-function toggleModal(id) {
-const m = document.getElementById(id);
-if (!m) return;
-m.classList.toggle('hidden');
-if(id === 'historyModal' && !m.classList.contains('hidden')) {
-loadHistoryModal();
-}
-}
-
-function loadHistoryModal() {
-const container = document.getElementById('historyList');
-if(!container) return;
-container.innerHTML = '';
-if(!appData.history || appData.history.length === 0) {
-container.innerHTML = '<p class="text-xs text-slate-400">No hay sesiones guardadas aún.</p>';
-return;
-}
-
-appData.history.slice().reverse().forEach((s, revIdx) => {
-const originalIdx = appData.history.length - 1 - revIdx;
-const item = document.createElement('div');
-item.className = 'bg-slate-900 p-3.5 rounded-xl border border-slate-700 text-xs';
-item.innerHTML = &lt;div class="flex justify-between items-center font-bold text-sky-400 mb-2 border-b border-slate-800 pb-1.5"&gt; &lt;span&gt;📅 ${s.date} - Día ${s.day}&lt;/span&gt; &lt;button onclick="deleteSessionRecord(${originalIdx})" class="text-rose-400 hover:text-rose-300 bg-rose-500/10 hover:bg-rose-500/20 px-2 py-1 rounded transition text-[11px]">
-🗑️ Borrar
-</button>
-</div>
-<div class="text-slate-300 space-y-1">
-${Object.values(s.data).map(d =&gt; d.weight ?<div>• <strong>{d.weight} kg</span> <span class="text-slate-400">({d.notes ? <span class="italic text-slate-500"&gt;- ${d.notes}</span>: ''}&lt;/div> : '').filter(Boolean).join('')}
-</div>
-`;
-container.appendChild(item);
-});
-}
-
-function downloadCSV() {
-if(!appData.history || appData.history.length === 0) {
-alert("No hay datos para exportar.");
-return;
-}
-let csv = "Fecha,Dia,Ejercicio,Peso_kg,Reps,Notas\n";
-appData.history.forEach(s => {
-Object.keys(s.data).forEach(exId => {
-const d = s.data[exId];
-if(d.weight) {
-csv += "${s.date}","Día {d.name}","{d.reps}","${d.notes}"\n;
-}
-});
-});
-
-const blob = new Blob([csv], { type: 'text/csv' });
-const url = window.URL.createObjectURL(blob);
-const a = document.createElement('a');
-a.href = url;
-a.download = Historial_Gimnasio_${new Date().toISOString().slice(0,10)}.csv`;
-a.click();
-}
-
-window.addEventListener('DOMContentLoaded', () => {
-loadDayData();
-});
 </script>
 </body>
 </html>
